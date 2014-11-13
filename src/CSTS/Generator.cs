@@ -18,7 +18,7 @@ namespace CSTS
     private GeneratorOptions _options;
 
     public Generator(params Type[] types)
-      : this(types, t => types.Any(x => x.Assembly == t.Assembly), t => types.Any(x => x.Assembly == t.Assembly), t => t.Namespace)
+      : this(new GeneratorOptions(types))
     {
 
     }
@@ -350,7 +350,7 @@ namespace CSTS
     {
       var mapping = GenerateMapping();
 
-      var generator = new ClassDefinitionsGenerator(mapping);
+      var generator = new ClassDefinitionsGenerator(mapping, this._options);
       var result = generator.Generate();
 
       return result;

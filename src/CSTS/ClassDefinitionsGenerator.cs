@@ -19,12 +19,14 @@ namespace CSTS
     private HashSet<Type> _processedTypes = new HashSet<Type>();
     private HashSet<string> _processedModules = new HashSet<string>();
     private Dictionary<string, TypeScriptModule> _modulesByName;
+    private GeneratorOptions _options;
 
-    public ClassDefinitionsGenerator(IEnumerable<TypeScriptModule> modules)
+    public ClassDefinitionsGenerator(IEnumerable<TypeScriptModule> modules, GeneratorOptions options)
     {
       _modules = modules;
       _sb = new StringBuilder(modules.Sum(m => m.ModuleMembers.Count) * 256);
       _modulesByName = modules.ToDictionary(k => k.Module);
+      _options = options;
     }
 
     public IEnumerable<TypeScriptModule> Modules
@@ -122,6 +124,14 @@ namespace CSTS
       foreach (var p in type.Properties)
       {
         Render(sb, p);
+      }
+
+      if (_options.CodeGenerationOptions.AdditionalMembers != null)
+      {
+        foreach (var member in _options.CodeGenerationOptions.AdditionalMembers(type.ClrType))
+        {
+          sb.AppendLine(member);
+        }
       }
 
       sb.DecreaseIndentation();

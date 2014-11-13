@@ -11,6 +11,16 @@ namespace CSTS
     public GeneratorOptions()
     {
       this.CommentingOptions = CommentingOptions.Default;
+      this.CodeGenerationOptions = CodeGenerationOptions.Default;
+
+      this.TypeFilter = t => this.Types.Any(x => x.Assembly == t.Assembly);
+      this.BaseTypeFilter = t => this.Types.Any(x => x.Assembly == t.Assembly);
+      this.ModuleNameGenerator = t => t.Namespace;
+    }
+
+    public GeneratorOptions(IEnumerable<Type> types) : this()
+    {
+      this.Types = types;
     }
 
     public IEnumerable<Type> Types { get; set; }
@@ -22,6 +32,20 @@ namespace CSTS
     public Func<Type, string> ModuleNameGenerator { get; set; }
 
     public CommentingOptions CommentingOptions { get; set; }
+    public CodeGenerationOptions CodeGenerationOptions { get; set; }
+  }
+
+  public class CodeGenerationOptions
+  {
+    public static CodeGenerationOptions Default
+    {
+      get
+      {
+        return new CodeGenerationOptions();
+      }
+    }
+
+    public Func<Type, IEnumerable<string>> AdditionalMembers { get; set; }
   }
 
   public class CommentingOptions
