@@ -149,12 +149,44 @@ namespace CSTS
 
         ProcessGenericArguments(t, tst);
 
+        ProcessGenericConstraints(t, tst);
+
         ProcessNestedType(t, tst);
 
         ProcessInterfaces(t, tst);
       }
 
       return processedType;
+    }
+
+    private void ProcessGenericConstraints(Type t, CustomType tst)
+    {
+      if (t.IsGenericTypeDefinition)
+      {
+        tst.GenericParameters = new List<GenericParameter>();
+
+        foreach (var param in t.GetGenericArguments())
+        {
+          var genericParam = new GenericParameter()
+          {
+            GenericConstraints = new List<TypeScriptType>(),
+            ClrGenericArgument = param
+          };
+
+          tst.GenericParameters.Add(genericParam);
+          var constraints = param.GetGenericParameterConstraints();
+
+          if (constraints.Any())
+          {
+            foreach (var constraint in constraints)
+            {
+              var constraintArg = ProcessTypeScriptType(constraint, (dynamic)GetTypeScriptType(constraint));
+
+              genericParam.GenericConstraints.Add((TypeScriptType)constraintArg);
+            }
+          }
+        }
+      }
     }
 
     private void ProcessInterfaces(Type t, CustomType tst)

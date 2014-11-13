@@ -3,6 +3,7 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 using CSTS;
 using System.Linq;
 using FluentAssertions;
+using System.Collections.Generic;
 
 namespace CSTS.Tests
 {
@@ -163,10 +164,47 @@ namespace CSTS.Tests
 
       var modules = generator.GenerateMapping();
 
+    }
 
+    public class ConstraintType
+    {
 
     }
 
+    public class ClassWithGenericConstraint<T> where T : ConstraintType
+    {
+
+    }
+
+    [TestMethod]
+    public void Generic_constraints_should_be_included_in_definition()
+    {
+      var generator = new Generator(typeof(ClassWithGenericConstraint<>));
+
+      var result = generator.GenerateTypes();
+
+      result.Should().Contain("class GenericTestsClassWithGenericConstraint<T extends CSTS.Tests.GenericTestsConstraintType>");
+
+    }
+
+    public class ClassWithRecursiveConstraint<T> where T : IEnumerable<T>
+    {
+
+    }
+
+
+    // Is the constraint recursive? Not supported in TypeScript. Just treat the self referential constraint as 'any' 
+    // https://typescript.codeplex.com/wikipage?title=Known%20breaking%20changes%20between%200.8%20and%200.9&referringTitle=Documentation
+    [TestMethod]
+    public void Recursive_generic_constraints_should_be_treated_as_type_any()
+    {
+      var generator = new Generator(typeof(ClassWithRecursiveConstraint<>));
+
+      var result = generator.GenerateTypes();
+
+      result.Should().Contain("class GenericTestsClassWithRecursiveConstraint<T extends any[]>");
+
+    }
   }
 }
 

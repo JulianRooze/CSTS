@@ -121,13 +121,11 @@ namespace CSTS
 
       if (type.IsGenericTypeDefinition)
       {
-        var genericParams = type.GetGenericArguments();
-
         string nameOverride;
 
         _interfaceNamingOverride.TryGetValue(type, out nameOverride);
 
-        typeName = string.Format("{0}<{1}>", nameOverride ?? _genericTypeReplacer.Replace(type.Name, ""), string.Join(", ", genericParams.Select(p => p.Name)));
+        typeName = string.Format("{0}<{1}>", nameOverride ?? _genericTypeReplacer.Replace(type.Name, ""), string.Join(", ", tst.GenericParameters.Select(p => GetGenericParameterName(p))));
       }
       else if (type.IsGenericType)
       {
@@ -144,12 +142,42 @@ namespace CSTS
         typeName = type.Name;
       }
 
-      if(tst.DeclaringType != null)
+      if (tst.DeclaringType != null)
       {
         typeName = GetTypeName((dynamic)tst.DeclaringType) + typeName;
       }
 
       return typeName;
+    }
+
+    private string GetGenericParameterName(GenericParameter p)
+    {
+      if (!p.GenericConstraints.Any())
+      {
+        return p.ClrGenericArgument.Name;
+      }
+      else
+      {
+        var arg = p.GenericConstraints.First();
+
+        var recursive = false;
+
+        // Is the constraint recursive? Not supported in TypeScript. Just return the generic arg without the constraint 
+        // https://typescript.codeplex.com/wikipage?title=Known%20breaking%20changes%20between%200.8%20and%200.9&referringTitle=Documentation
+        if (arg.ClrType.IsGenericType && arg.ClrType.GetGenericArguments().Any(g => g == p.ClrGenericArgument))
+        {
+          recursive = true;
+        }
+
+        string value = string.Format("{0} extends {1}{2}", p.ClrGenericArgument.Name, _moduleNameGenerator.GetModuleName((dynamic)arg), GetTypeName((dynamic)arg));
+
+        if (recursive)
+        {
+          value = value.Replace(string.Format("<{0}>", p.ClrGenericArgument.Name), "<any>").Replace(string.Format("{0}[]", p.ClrGenericArgument.Name), "any[]");
+        }
+
+        return value;
+      }
     }
 
   }

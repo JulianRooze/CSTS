@@ -7,7 +7,13 @@ using System.Threading.Tasks;
 
 namespace CSTS
 {
-  internal class TypeScriptType
+
+  interface ITypeScriptType
+  {
+    Type ClrType { get; set; }
+  }
+
+  internal class TypeScriptType : ITypeScriptType
   {
     public Type ClrType { get; set; }
 
@@ -17,9 +23,10 @@ namespace CSTS
     }
   }
 
-  interface IModuleMember
+  interface IModuleMember : ITypeScriptType
   {
     string Module { get; set; }
+    TypeScriptType BaseType { get; set; }
   }
 
   internal class TypeScriptModule
@@ -79,6 +86,7 @@ namespace CSTS
   internal class EnumType : ValueType, IModuleMember
   {
     public string Module { get; set; }
+    public TypeScriptType BaseType { get; set; }
   }
 
   internal class TypeScriptProperty
@@ -90,6 +98,13 @@ namespace CSTS
     {
       return Property.ToString() + " - " + Type.GetType().ToString();
     }
+  }
+
+  internal class GenericParameter
+  {
+    public IList<TypeScriptType> GenericConstraints { get; set; }
+
+    public Type ClrGenericArgument { get; set; }
   }
 
   internal class CustomType : TypeScriptType, IModuleMember
@@ -108,6 +123,8 @@ namespace CSTS
     public string Module { get; set; }
 
     public IList<TypeScriptType> GenericArguments { get; set; }
+
+    public IList<GenericParameter> GenericParameters { get; set; }
 
     public bool IncludeInheritedProperties { get; set; }
 
