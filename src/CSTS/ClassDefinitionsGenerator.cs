@@ -10,16 +10,21 @@ namespace CSTS
 
   internal class ClassDefinitionsGenerator
   {
-    private IndentedStringBuilder _sb;
+    private StringBuilder _sb;
     private PropertyCommenter _propertyCommenter = new PropertyCommenter();
     private ModuleNameGenerator _moduleNameGenerator = new ModuleNameGenerator();
     private TypeNameGenerator _typeNameGenerator;
     private IEnumerable<TypeScriptModule> _modules;
 
+    private HashSet<Type> _processedTypes = new HashSet<Type>();
+    private HashSet<string> _processedModules = new HashSet<string>();
+    private Dictionary<string, TypeScriptModule> _modulesByName;
+
     public ClassDefinitionsGenerator(IEnumerable<TypeScriptModule> modules)
     {
       _modules = modules;
-      _sb = new IndentedStringBuilder(modules.Sum(m => m.ModuleMembers.Count) * 256);
+      _sb = new StringBuilder(modules.Sum(m => m.ModuleMembers.Count) * 256);
+      _modulesByName = modules.ToDictionary(k => k.Module);
     }
 
     public IEnumerable<TypeScriptModule> Modules
@@ -36,43 +41,99 @@ namespace CSTS
 
       foreach (var module in _modules)
       {
-        _sb.AppendLine("module {0} {{", module.Module);
-        _sb.IncreaseIndentation();
-        _sb.AppendLine("");
-
-        foreach (var type in module.ModuleMembers)
-        {
-          Render((dynamic)type);
-        }
-
-        _sb.DecreaseIndentation();
-        _sb.AppendLine("}}");
-        _sb.AppendLine("");
+        RenderModule(module);
       }
 
       return _sb.ToString();
     }
 
-    private void Render(CustomType type)
+    private void RenderModule(string module)
     {
+      RenderModule(_modulesByName[module]);
+    }
+
+    private void RenderModule(TypeScriptModule module)
+    {
+      if (_processedModules.Contains(module.Module))
+      {
+        return;
+      }
+
+      var moduleBuffer = new IndentedStringBuilder(module.ModuleMembers.Count * 256);
+
+      moduleBuffer.AppendLine("module {0} {{", module.Module);
+      moduleBuffer.IncreaseIndentation();
+      moduleBuffer.AppendLine("");
+
+      foreach (var type in module.ModuleMembers)
+      {
+        Render(moduleBuffer, (dynamic)type);
+      }
+
+      moduleBuffer.DecreaseIndentation();
+      moduleBuffer.AppendLine("}}");
+      moduleBuffer.AppendLine("");
+
+      _sb.AppendLine(moduleBuffer.ToString());
+      _processedModules.Add(module.Module);
+    }
+
+    private void Render(IndentedStringBuilder sb, CustomType type)
+    {
+      if (_processedTypes.Contains(type.ClrType))
+      {
+        return;
+      }
+
+      Type baseType = null;
+
+      if (type.BaseType != null)
+      {
+        baseType = type.BaseType.ClrType;
+
+        if (baseType.IsGenericType)
+        {
+          baseType = baseType.GetGenericTypeDefinition();
+        }
+
+        if (!_processedTypes.Contains(baseType))
+        {
+          var moduleMember = type.BaseType as IModuleMember;
+
+          if (moduleMember != null)
+          {
+            if (moduleMember.Module == type.Module)
+            {
+              Render(sb, (dynamic)type.BaseType);
+            }
+            else
+            {
+              RenderModule(moduleMember.Module);
+            }
+          }
+        }
+      }
+
       var interfaceType = type as InterfaceType;
 
-      _sb.AppendLine("export {2} {0}{1} {3}{{", _typeNameGenerator.GetTypeName(type), RenderBaseType(type), interfaceType == null ? "class" : "interface", RenderInterfaces(type));
-      _sb.IncreaseIndentation();
+      sb.AppendLine("export {2} {0}{1} {3}{{", _typeNameGenerator.GetTypeName(type), RenderBaseType(type), interfaceType == null ? "class" : "interface", RenderInterfaces(type));
+      sb.IncreaseIndentation();
 
       foreach (var p in type.Properties)
       {
-        Render(p);
+        Render(sb, p);
       }
 
-      _sb.DecreaseIndentation();
-      _sb.AppendLine("}}");
-      _sb.AppendLine("");
+      sb.DecreaseIndentation();
+      sb.AppendLine("}}");
+      sb.AppendLine("");
+
+      _processedTypes.Add(type.ClrType.IsGenericType ? type.ClrType.GetGenericTypeDefinition() : type.ClrType);
     }
 
-    private void Render(TypeScriptProperty p)
+    private void Render(IndentedStringBuilder sb, TypeScriptProperty p)
     {
-      _sb.AppendLine("{0} : {1}{2}; {3}", p.Property.Name, _moduleNameGenerator.GetModuleName((dynamic)p.Type), _typeNameGenerator.GetTypeName((dynamic)p.Type), _propertyCommenter.GetPropertyComment(p));
+      sb.AppendLine("{0} : {1}{2}; {3}", p.Property.Name, _moduleNameGenerator.GetModuleName((dynamic)p.Type), _typeNameGenerator.GetTypeName((dynamic)p.Type), _propertyCommenter.GetPropertyComment(p));
     }
 
     private string RenderInterfaces(CustomType type)
@@ -97,10 +158,10 @@ namespace CSTS
       return baseType;
     }
 
-    private void Render(EnumType type)
+    private void Render(IndentedStringBuilder sb, EnumType type)
     {
-      _sb.AppendLine("export enum {0} {{", type.ClrType.Name);
-      _sb.IncreaseIndentation();
+      sb.AppendLine("export enum {0} {{", type.ClrType.Name);
+      sb.IncreaseIndentation();
 
       var values = Enum.GetValues(type.ClrType);
       var names = Enum.GetNames(type.ClrType);
@@ -112,12 +173,12 @@ namespace CSTS
         var name = names[i];
         i++;
 
-        _sb.AppendLine("{0} = {1},", name, (int)val);
+        sb.AppendLine("{0} = {1},", name, (int)val);
       }
 
-      _sb.DecreaseIndentation();
-      _sb.AppendLine("}}");
-      _sb.AppendLine("");
+      sb.DecreaseIndentation();
+      sb.AppendLine("}}");
+      sb.AppendLine("");
     }
   }
 }
