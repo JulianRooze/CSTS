@@ -15,11 +15,13 @@ namespace CSTS
     private ModuleNameGenerator _moduleNameGenerator = new ModuleNameGenerator();
     private TypeNameGenerator _typeNameGenerator;
     private IEnumerable<TypeScriptModule> _modules;
+    private GeneratorOptions _options;
 
-    public InterfaceDefinitionsGenerator(IEnumerable<TypeScriptModule> modules)
+    public InterfaceDefinitionsGenerator(IEnumerable<TypeScriptModule> modules, GeneratorOptions options)
     {
       _modules = modules;
       _sb = new IndentedStringBuilder(modules.Sum(m => m.ModuleMembers.Count) * 256);
+      _options = options;
     }
 
     public IEnumerable<TypeScriptModule> Modules
@@ -61,6 +63,14 @@ namespace CSTS
       foreach (var p in type.Properties)
       {
         Render(p);
+      }
+
+      if (_options.CodeGenerationOptions.AdditionalMembers != null)
+      {
+        foreach (var member in _options.CodeGenerationOptions.AdditionalMembers(type.ClrType))
+        {
+          _sb.AppendLine(member);
+        }
       }
 
       _sb.DecreaseIndentation();
