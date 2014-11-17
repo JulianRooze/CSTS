@@ -87,34 +87,7 @@ namespace CSTS
         return;
       }
 
-      Type baseType = null;
-
-      if (type.BaseType != null)
-      {
-        baseType = type.BaseType.ClrType;
-
-        if (baseType.IsGenericType)
-        {
-          baseType = baseType.GetGenericTypeDefinition();
-        }
-
-        if (!_processedTypes.Contains(baseType))
-        {
-          var moduleMember = type.BaseType as IModuleMember;
-
-          if (moduleMember != null)
-          {
-            if (moduleMember.Module == type.Module)
-            {
-              Render(sb, (dynamic)type.BaseType);
-            }
-            else
-            {
-              RenderModule(moduleMember.Module);
-            }
-          }
-        }
-      }
+      ProcessBaseType(sb, type);
 
       var interfaceType = type as InterfaceType;
 
@@ -139,6 +112,36 @@ namespace CSTS
       sb.AppendLine("");
 
       _processedTypes.Add(type.ClrType.IsGenericType ? type.ClrType.GetGenericTypeDefinition() : type.ClrType);
+    }
+
+    private void ProcessBaseType(IndentedStringBuilder sb, CustomType type)
+    {
+      if (type.BaseType != null)
+      {
+        var baseType = type.BaseType.ClrType;
+
+        if (baseType.IsGenericType)
+        {
+          baseType = baseType.GetGenericTypeDefinition();
+        }
+
+        if (!_processedTypes.Contains(baseType))
+        {
+          var moduleMember = type.BaseType as IModuleMember;
+
+          if (moduleMember != null)
+          {
+            if (moduleMember.Module == type.Module)
+            {
+              Render(sb, (dynamic)type.BaseType);
+            }
+            else
+            {
+              RenderModule(moduleMember.Module);
+            }
+          }
+        }
+      }
     }
 
     private void Render(IndentedStringBuilder sb, TypeScriptProperty p)
