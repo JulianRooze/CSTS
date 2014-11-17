@@ -361,7 +361,7 @@ namespace CSTS
     {
       var mapping = GenerateMapping();
 
-      var generator = new InterfaceDefinitionsGenerator(mapping);
+      var generator = new InterfaceDefinitionsGenerator(mapping, this._options);
       var result = generator.Generate();
 
       return result;
