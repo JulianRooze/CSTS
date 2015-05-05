@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
@@ -11,7 +12,7 @@ namespace CSTS
   internal class ClassDefinitionsGenerator
   {
     private StringBuilder _sb;
-    private PropertyCommenter _propertyCommenter = new PropertyCommenter();
+    private PropertyCommenter _propertyCommenter;
     private ModuleNameGenerator _moduleNameGenerator = new ModuleNameGenerator();
     private TypeNameGenerator _typeNameGenerator;
     private IEnumerable<TypeScriptModule> _modules;
@@ -27,6 +28,7 @@ namespace CSTS
       _sb = new StringBuilder(modules.Sum(m => m.ModuleMembers.Count) * 256);
       _modulesByName = modules.ToDictionary(k => k.Module);
       _options = options;
+      _propertyCommenter = new PropertyCommenter(options);
     }
 
     public IEnumerable<TypeScriptModule> Modules
@@ -61,6 +63,8 @@ namespace CSTS
         return;
       }
 
+      _processedModules.Add(module.Module);
+
       var moduleBuffer = new IndentedStringBuilder(module.ModuleMembers.Count * 256);
 
       moduleBuffer.AppendLine("module {0} {{", module.Module);
@@ -77,7 +81,6 @@ namespace CSTS
       moduleBuffer.AppendLine("");
 
       _sb.AppendLine(moduleBuffer.ToString());
-      _processedModules.Add(module.Module);
     }
 
     private void Render(IndentedStringBuilder sb, CustomType type)
@@ -86,6 +89,8 @@ namespace CSTS
       {
         return;
       }
+
+      _processedTypes.Add(type.ClrType.IsGenericType ? type.ClrType.GetGenericTypeDefinition() : type.ClrType);
 
       ProcessBaseType(sb, type);
 
@@ -111,7 +116,6 @@ namespace CSTS
       sb.AppendLine("}}");
       sb.AppendLine("");
 
-      _processedTypes.Add(type.ClrType.IsGenericType ? type.ClrType.GetGenericTypeDefinition() : type.ClrType);
     }
 
     private void ProcessBaseType(IndentedStringBuilder sb, CustomType type)
@@ -146,7 +150,14 @@ namespace CSTS
 
     private void Render(IndentedStringBuilder sb, TypeScriptProperty p)
     {
-      sb.AppendLine("{0} : {1}{2}; {3}", p.Property.Name, _moduleNameGenerator.GetModuleName((dynamic)p.Type), _typeNameGenerator.GetTypeName((dynamic)p.Type), _propertyCommenter.GetPropertyComment(p));
+      var prefixComment = _propertyCommenter.GetPropertyCommentPrefixed(p);
+
+      if (!string.IsNullOrEmpty(prefixComment))
+      {
+        sb.AppendLine(prefixComment);
+      }
+
+      sb.AppendLine("{0} : {1}{2}; {3}", p.Property.Name, _moduleNameGenerator.GetModuleName((dynamic)p.Type), _typeNameGenerator.GetTypeName((dynamic)p.Type), _propertyCommenter.GetPropertyCommentPostfixed(p));
     }
 
     private string RenderInterfaces(CustomType type)
@@ -186,7 +197,7 @@ namespace CSTS
         var name = names[i];
         i++;
 
-        sb.AppendLine("{0} = {1},", name, (int)val);
+        sb.AppendLine("{0} = {1},", name, Convert.ChangeType(val, typeof(int)));
       }
 
       sb.DecreaseIndentation();

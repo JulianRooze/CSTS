@@ -8,6 +8,13 @@ namespace CSTS
 {
   internal class PropertyCommenter
   {
+    private GeneratorOptions _options;
+
+    internal PropertyCommenter(GeneratorOptions options)
+    {
+      _options = options;
+    }
+
     private string GetPropertyComment(ValueType p)
     {
       return p.ClrType.Name + (p.IsNullable ? ", nullable" : "");
@@ -28,7 +35,24 @@ namespace CSTS
       return null;
     }
 
-    public string GetPropertyComment(TypeScriptProperty p)
+    public string GetPropertyCommentPrefixed(TypeScriptProperty p)
+    {
+      var func = _options.CommentingOptions.PrefixedCommentGenerator;
+
+      if (func != null)
+      {
+        var comment = func(p.Property);
+
+        if (!string.IsNullOrEmpty(comment))
+        {
+          return "// " + comment;
+        }
+      }
+
+      return null;
+    }
+
+    public string GetPropertyCommentPostfixed(TypeScriptProperty p)
     {
       var obsolete = p.Property.GetCustomAttributes(typeof(ObsoleteAttribute), false).FirstOrDefault() as ObsoleteAttribute;
 

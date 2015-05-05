@@ -92,7 +92,7 @@ namespace CSTS
   internal class TypeScriptProperty
   {
     public TypeScriptType Type { get; set; }
-    public PropertyInfo Property { get; set; }
+    public MemberInfo Property { get; set; }
 
     public override string ToString()
     {

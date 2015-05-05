@@ -41,18 +41,24 @@ namespace CSTS
 
     private void ProcessProperties(CustomType tst)
     {
-      BindingFlags flags = BindingFlags.Instance | BindingFlags.Public | BindingFlags.DeclaredOnly;
+      BindingFlags flags;
 
       if (tst.IncludeInheritedProperties)
       {
         flags = BindingFlags.Instance | BindingFlags.Public;
       }
+      else
+      {
+        flags = BindingFlags.Instance | BindingFlags.Public | BindingFlags.DeclaredOnly;
+      }
 
-      var properties = tst.ClrType.GetProperties(flags);
+      var properties = tst.ClrType.GetProperties(flags).Cast<MemberInfo>().Union(tst.ClrType.GetFields(flags));
 
       foreach (var property in properties)
       {
-        var propertyTst = ProcessTypeScriptType(property.PropertyType, (dynamic)GetTypeScriptType(property.PropertyType));
+        var type = property.MemberType == MemberTypes.Property ? ((PropertyInfo)property).PropertyType : ((FieldInfo)property).FieldType;
+
+        var propertyTst = ProcessTypeScriptType(type, (dynamic)GetTypeScriptType(type));
 
         tst.Properties.Add(new TypeScriptProperty
         {
@@ -286,7 +292,12 @@ namespace CSTS
                                         typeof(long),
                                         typeof(float),
                                         typeof(short),
-                                        typeof(byte)))
+                                        typeof(byte),
+                                        typeof(uint),
+                                        typeof(ushort),
+                                        typeof(ulong),
+                                        typeof(sbyte)
+                                        ))
       {
         tst = new NumberType();
       }

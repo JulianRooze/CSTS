@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -29,7 +30,28 @@ namespace CSTS
 
     public Func<Type, bool> BaseTypeFilter { get; set; }
 
-    public Func<Type, string> ModuleNameGenerator { get; set; }
+
+    private Func<Type, string> _userSuppliedModuleNameGenerator;
+
+    public Func<Type, string> ModuleNameGenerator
+    {
+      get
+      {
+        return _userSuppliedModuleNameGenerator;
+      }
+      set
+      {
+        _userSuppliedModuleNameGenerator = t =>
+        {
+          if (TypeHelper.IsNullableValueType(t))
+          {
+            t = Nullable.GetUnderlyingType(t);
+          }
+
+          return value(t);
+        };
+      }
+    }
 
     public CommentingOptions CommentingOptions { get; set; }
     public CodeGenerationOptions CodeGenerationOptions { get; set; }
@@ -51,6 +73,8 @@ namespace CSTS
   public class CommentingOptions
   {
     public bool RenderObsoleteAttributesAsComments { get; set; }
+
+    public Func<MemberInfo, string> PrefixedCommentGenerator { get; set; }
 
     public static CommentingOptions Default
     {

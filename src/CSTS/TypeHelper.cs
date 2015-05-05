@@ -20,7 +20,7 @@ namespace CSTS
     {
       return typeof(IEnumerable).IsAssignableFrom(t) && t != typeof(string);
     }
-    
+
     public static bool IsDictionary(Type t)
     {
       if (typeof(IDictionary).IsAssignableFrom(t))
@@ -97,6 +97,22 @@ namespace CSTS
       }
 
       return null;
+    }
+
+    internal static long GetEnumValueAsNumber(Type enumType, object value)
+    {
+      var underlyingType = Enum.GetUnderlyingType(enumType);
+
+      if (underlyingType == typeof(byte))
+      {
+        return (byte)value;
+      }
+
+      //if(underlyingType == typeof())
+
+
+
+      return (int)value;
     }
 
   }

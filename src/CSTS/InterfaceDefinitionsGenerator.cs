@@ -11,7 +11,7 @@ namespace CSTS
   internal class InterfaceDefinitionsGenerator
   {
     private IndentedStringBuilder _sb;
-    private PropertyCommenter _propertyCommenter = new PropertyCommenter();
+    private PropertyCommenter _propertyCommenter;
     private ModuleNameGenerator _moduleNameGenerator = new ModuleNameGenerator();
     private TypeNameGenerator _typeNameGenerator;
     private IEnumerable<TypeScriptModule> _modules;
@@ -22,6 +22,7 @@ namespace CSTS
       _modules = modules;
       _sb = new IndentedStringBuilder(modules.Sum(m => m.ModuleMembers.Count) * 256);
       _options = options;
+      _propertyCommenter = new PropertyCommenter(options);
     }
 
     public IEnumerable<TypeScriptModule> Modules
@@ -80,7 +81,14 @@ namespace CSTS
 
     private void Render(TypeScriptProperty p)
     {
-      _sb.AppendLine("{0}{3} : {1}{2}; {4}", p.Property.Name, _moduleNameGenerator.GetModuleName((dynamic)p.Type), _typeNameGenerator.GetTypeName((dynamic)p.Type), HandleOptional(p.Type), _propertyCommenter.GetPropertyComment(p));
+      var prefixComment = _propertyCommenter.GetPropertyCommentPrefixed(p);
+
+      if (!string.IsNullOrEmpty(prefixComment))
+      {
+        _sb.AppendLine(prefixComment);
+      }
+
+      _sb.AppendLine("{0}{3} : {1}{2}; {4}", p.Property.Name, _moduleNameGenerator.GetModuleName((dynamic)p.Type), _typeNameGenerator.GetTypeName((dynamic)p.Type), HandleOptional(p.Type), _propertyCommenter.GetPropertyCommentPostfixed(p));
     }
 
     private string HandleOptional(TypeScriptType typeScriptType)
@@ -131,7 +139,7 @@ namespace CSTS
         var name = names[i];
         i++;
 
-        _sb.AppendLine("{0} = {1},", name, (int)val);
+        _sb.AppendLine("{0} = {1},", name, Convert.ChangeType(val, typeof(int)));
       }
 
       _sb.DecreaseIndentation();
