@@ -30,6 +30,7 @@ namespace CSTS
 
     public Func<Type, bool> BaseTypeFilter { get; set; }
 
+    public Func<MemberInfo, bool> PropertyFilter { get; set; }
 
     private Func<Type, string> _userSuppliedModuleNameGenerator;
 
@@ -55,6 +56,7 @@ namespace CSTS
 
     public CommentingOptions CommentingOptions { get; set; }
     public CodeGenerationOptions CodeGenerationOptions { get; set; }
+
   }
 
   public class CodeGenerationOptions
@@ -63,11 +65,21 @@ namespace CSTS
     {
       get
       {
-        return new CodeGenerationOptions();
+        return new CodeGenerationOptions()
+        {
+          IndentationCharacter = '\t',
+          IndentationIncrementAmount = 1
+        };
       }
     }
 
     public Func<Type, IEnumerable<string>> AdditionalMembers { get; set; }
+
+    public bool GenerateExternalModules { get; set; }
+
+    public char IndentationCharacter { get; set; }
+
+    public int IndentationIncrementAmount { get; set; }
   }
 
   public class CommentingOptions

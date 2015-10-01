@@ -20,7 +20,7 @@ namespace CSTS
     public InterfaceDefinitionsGenerator(IEnumerable<TypeScriptModule> modules, GeneratorOptions options)
     {
       _modules = modules;
-      _sb = new IndentedStringBuilder(modules.Sum(m => m.ModuleMembers.Count) * 256);
+      _sb = new IndentedStringBuilder(modules.Sum(m => m.ModuleMembers.Count) * 256, options.CodeGenerationOptions.IndentationCharacter, options.CodeGenerationOptions.IndentationIncrementAmount);
       _options = options;
       _propertyCommenter = new PropertyCommenter(options);
     }

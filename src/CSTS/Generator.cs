@@ -56,6 +56,16 @@ namespace CSTS
 
       foreach (var property in properties)
       {
+        if (_options.PropertyFilter != null)
+        {
+          var processProperty = _options.PropertyFilter(property);
+
+          if (!processProperty)
+          {
+            continue;
+          }
+        }
+
         var type = property.MemberType == MemberTypes.Property ? ((PropertyInfo)property).PropertyType : ((FieldInfo)property).FieldType;
 
         var propertyTst = ProcessTypeScriptType(type, (dynamic)GetTypeScriptType(type));

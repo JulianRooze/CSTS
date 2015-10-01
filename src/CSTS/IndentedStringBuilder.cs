@@ -9,27 +9,32 @@ namespace CSTS
   internal class IndentedStringBuilder
   {
     private readonly StringBuilder _sb;
-    private int _indentation;
+    private readonly int _indentIncrement;
+    private readonly char _indentChar;
 
-    public IndentedStringBuilder(int capacity)
+    public IndentedStringBuilder(int capacity, char indentChar, int indentIncrement)
     {
       _sb = new StringBuilder(capacity);
-      _indentation = 0;
+      _currentIndentation = 0;
+      _indentIncrement = indentIncrement;
+      _indentChar = indentChar;
     }
+
+    private int _currentIndentation;
 
     public void IncreaseIndentation()
     {
-      _indentation++;
+      _currentIndentation += _indentIncrement;
     }
 
     public void DecreaseIndentation()
     {
-      _indentation = Math.Max(0, _indentation - 1);
+      _currentIndentation = Math.Max(0, _currentIndentation - _indentIncrement);
     }
 
     private void AppendWithIndentation(string template, params object[] args)
     {
-      _sb.AppendLine(new string('\t', _indentation) + string.Format(template, args));
+      _sb.AppendLine(new string(_indentChar, _currentIndentation) + string.Format(template, args));
     }
 
     public IndentedStringBuilder AppendLine(string template, params object[] args)

@@ -65,9 +65,9 @@ namespace CSTS
 
       _processedModules.Add(module.Module);
 
-      var moduleBuffer = new IndentedStringBuilder(module.ModuleMembers.Count * 256);
+      var moduleBuffer = new IndentedStringBuilder(module.ModuleMembers.Count * 256, _options.CodeGenerationOptions.IndentationCharacter, _options.CodeGenerationOptions.IndentationIncrementAmount);
 
-      moduleBuffer.AppendLine("module {0} {{", module.Module);
+      moduleBuffer.AppendLine("{1}module {0} {{", module.Module, _options.CodeGenerationOptions.GenerateExternalModules ? "export " : "");
       moduleBuffer.IncreaseIndentation();
       moduleBuffer.AppendLine("");
 
