@@ -142,4 +142,14 @@ namespace CSTS
   {
 
   }
+
+  internal class ManualType : TypeScriptType
+  {
+    public ManualType(string type)
+    {
+      this.ManualTypeName = type;
+    }
+
+    public string ManualTypeName { get; }
+  }
 }

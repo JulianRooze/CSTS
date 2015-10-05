@@ -64,6 +64,11 @@ namespace CSTS
 
     }
 
+    public string GetTypeName(ManualType tst)
+    {
+      return tst.ManualTypeName;
+    }
+
     public string GetTypeName(NumberType tst)
     {
       return "number";
