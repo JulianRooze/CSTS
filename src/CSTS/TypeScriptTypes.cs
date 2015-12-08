@@ -41,7 +41,7 @@ namespace CSTS
 
   }
 
-  internal class ValueType : TypeScriptType
+  internal abstract class ValueType : TypeScriptType
   {
     public bool IsNullable { get; set; }
   }
