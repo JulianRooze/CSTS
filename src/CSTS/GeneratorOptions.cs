@@ -24,6 +24,8 @@ namespace CSTS
       this.Types = types;
     }
 
+    public Func<Type, string> ManualTypes { get; set; }
+
     public IEnumerable<Type> Types { get; set; }
 
     public Func<Type, bool> TypeFilter { get; set; }

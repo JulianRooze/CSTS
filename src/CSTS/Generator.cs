@@ -288,7 +288,12 @@ namespace CSTS
     {
       TypeScriptType tst;
 
-      if (TypeHelper.Is(type, typeof(string)))
+      var manualType = _options.ManualTypes?.Invoke(type);
+      if (manualType != null)
+      {
+        tst = new ManualType(manualType);
+      }
+      else if (TypeHelper.Is(type, typeof(string)))
       {
         tst = new StringType();
       }
