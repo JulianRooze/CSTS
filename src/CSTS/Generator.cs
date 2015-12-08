@@ -335,6 +335,10 @@ namespace CSTS
       {
         tst = new EnumType();
       }
+      else if (TypeHelper.Is(type, typeof(Guid)))
+      {
+        tst = new StringType();
+      }
       else
       {
         var processType = _options.TypeFilter(type);
@@ -356,7 +360,7 @@ namespace CSTS
         }
       }
 
-      if (TypeHelper.IsNullableValueType(type))
+      if (tst is ValueType && TypeHelper.IsNullableValueType(type))
       {
         ((ValueType)tst).IsNullable = true;
         type = Nullable.GetUnderlyingType(type);
