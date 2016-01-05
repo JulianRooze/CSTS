@@ -83,7 +83,7 @@ namespace CSTS
       var typeInside = TypeHelper.GetTypeInsideEnumerable(t);
 
       var typeInsideTst = GetTypeScriptType(typeInside);
-
+      
       tst.ElementType = ProcessTypeScriptType(typeInside, (dynamic)typeInsideTst);
 
       return tst;
@@ -410,7 +410,7 @@ namespace CSTS
         .GroupBy(m => m.Module)
         .Select(m => new TypeScriptModule
         {
-          Module = m.Key,
+          Module = m.Key ?? string.Empty,
           ModuleMembers = m.ToList()
         }).ToList();
 

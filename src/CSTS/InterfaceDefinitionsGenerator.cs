@@ -39,18 +39,24 @@ namespace CSTS
 
       foreach (var module in _modules)
       {
-        _sb.AppendLine("declare module {0} {{", module.Module);
-        _sb.IncreaseIndentation();
-        _sb.AppendLine("");
+        if (!string.IsNullOrEmpty(module.Module))
+        {
+          _sb.AppendLine("declare module {0} {{", module.Module);
+          _sb.IncreaseIndentation();
+          _sb.AppendLine("");
+        }
 
         foreach (var type in module.ModuleMembers)
         {
           Render((dynamic)type);
         }
 
-        _sb.DecreaseIndentation();
-        _sb.AppendLine("}}");
-        _sb.AppendLine("");
+        if (!string.IsNullOrEmpty(module.Module))
+        {
+          _sb.DecreaseIndentation();
+          _sb.AppendLine("}}");
+          _sb.AppendLine("");
+        }
       }
 
       return _sb.ToString();
