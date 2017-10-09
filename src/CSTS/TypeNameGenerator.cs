@@ -99,7 +99,7 @@ namespace CSTS
       return tst.ClrType.Name;
     }
 
-    private string GetTypeName(DictionaryType tst)
+    public string GetTypeName(DictionaryType tst)
     {
       return string.Format("{{ [ key : {2}{0} ] : {3}{1} }}",
         GetTypeName((dynamic)tst.ElementKeyType), GetTypeName((dynamic)tst.ElementValueType),

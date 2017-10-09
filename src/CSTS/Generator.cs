@@ -83,7 +83,7 @@ namespace CSTS
       var typeInside = TypeHelper.GetTypeInsideEnumerable(t);
 
       var typeInsideTst = GetTypeScriptType(typeInside);
-      
+
       tst.ElementType = ProcessTypeScriptType(typeInside, (dynamic)typeInsideTst);
 
       return tst;
@@ -95,16 +95,13 @@ namespace CSTS
       {
         var args = tst.ClrType.GetGenericArguments();
 
-        if (typeof(IDictionary).IsAssignableFrom(tst.ClrType) && args.Length == 2)
-        {
-          var keyTst = GetTypeScriptType(args[0]);
+        var keyTst = GetTypeScriptType(args[0]);
 
-          tst.ElementKeyType = ProcessTypeScriptType(args[0], (dynamic)keyTst);
+        tst.ElementKeyType = ProcessTypeScriptType(args[0], (dynamic)keyTst);
 
-          var valueTst = GetTypeScriptType(args[1]);
+        var valueTst = GetTypeScriptType(args[1]);
 
-          tst.ElementValueType = ProcessTypeScriptType(args[1], (dynamic)valueTst);
-        }
+        tst.ElementValueType = ProcessTypeScriptType(args[1], (dynamic)valueTst);
       }
 
       return tst;
