@@ -67,18 +67,24 @@ namespace CSTS
 
       var moduleBuffer = new IndentedStringBuilder(module.ModuleMembers.Count * 256, _options.CodeGenerationOptions.IndentationCharacter, _options.CodeGenerationOptions.IndentationIncrementAmount);
 
-      moduleBuffer.AppendLine("{1}module {0} {{", module.Module, _options.CodeGenerationOptions.GenerateExternalModules ? "export " : "");
-      moduleBuffer.IncreaseIndentation();
-      moduleBuffer.AppendLine("");
+      if (!string.IsNullOrEmpty(module.Module))
+      {
+        moduleBuffer.AppendLine("{1}module {0} {{", module.Module, _options.CodeGenerationOptions.GenerateExternalModules ? "export " : "");
+        moduleBuffer.IncreaseIndentation();
+        moduleBuffer.AppendLine("");
+      }
 
       foreach (var type in module.ModuleMembers)
       {
         Render(moduleBuffer, (dynamic)type);
       }
 
-      moduleBuffer.DecreaseIndentation();
-      moduleBuffer.AppendLine("}}");
-      moduleBuffer.AppendLine("");
+      if (!string.IsNullOrEmpty(module.Module))
+      {
+        moduleBuffer.DecreaseIndentation();
+        moduleBuffer.AppendLine("}}");
+        moduleBuffer.AppendLine("");
+      }
 
       _sb.AppendLine(moduleBuffer.ToString());
     }
@@ -167,7 +173,14 @@ namespace CSTS
         return "";
       }
 
-      return string.Format("implements {0} ", string.Join(", ", type.ImplementedInterfaces.Select(i => string.Format("{0}{1}", _moduleNameGenerator.GetModuleName((dynamic)i), _typeNameGenerator.GetTypeName((dynamic)i)))));
+      string implements = "implements";
+
+      if (type is InterfaceType)
+      {
+        implements = "extends";
+      }
+
+      return string.Format("{0} {1} ", implements, string.Join(", ", type.ImplementedInterfaces.Select(i => string.Format("{0}{1}", _moduleNameGenerator.GetModuleName((dynamic)i), _typeNameGenerator.GetTypeName((dynamic)i)))));
     }
 
     private string RenderBaseType(CustomType type)

@@ -83,7 +83,7 @@ namespace CSTS
       var typeInside = TypeHelper.GetTypeInsideEnumerable(t);
 
       var typeInsideTst = GetTypeScriptType(typeInside);
-
+      
       tst.ElementType = ProcessTypeScriptType(typeInside, (dynamic)typeInsideTst);
 
       return tst;
@@ -340,6 +340,10 @@ namespace CSTS
       {
         tst = new EnumType();
       }
+      else if (TypeHelper.Is(type, typeof(Guid)))
+      {
+        tst = new StringType();
+      }
       else
       {
         var processType = _options.TypeFilter(type);
@@ -361,7 +365,7 @@ namespace CSTS
         }
       }
 
-      if (TypeHelper.IsNullableValueType(type))
+      if (tst is ValueType && TypeHelper.IsNullableValueType(type))
       {
         ((ValueType)tst).IsNullable = true;
         type = Nullable.GetUnderlyingType(type);
@@ -406,7 +410,7 @@ namespace CSTS
         .GroupBy(m => m.Module)
         .Select(m => new TypeScriptModule
         {
-          Module = m.Key,
+          Module = m.Key ?? string.Empty,
           ModuleMembers = m.ToList()
         }).ToList();
 
