@@ -205,6 +205,28 @@ namespace CSTS.Tests
       result.Should().Contain("class GenericTestsClassWithRecursiveConstraint<T extends any[]>");
 
     }
+
+    public class ClassWithDictionaries
+    {
+      public Dictionary<string, string> StringStringDictionary { get; set; }
+      public Dictionary<DictEnum, string> EnumStringDictionary { get; set; }
+    }
+
+    public enum DictEnum
+    {
+      Test = 1
+    }
+
+    [TestMethod]
+    public void Dictionary_with_Enum_as_key_should_be_handled_as_Number()
+    {
+      var generator = new Generator(typeof(ClassWithDictionaries));
+
+      var result = generator.GenerateTypes();
+
+      result.Should().Contain("EnumStringDictionary : { [ DictEnum : number ] : string };");
+
+    }
   }
 }
 

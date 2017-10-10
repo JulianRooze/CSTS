@@ -101,6 +101,12 @@ namespace CSTS
 
     public string GetTypeName(DictionaryType tst)
     {
+      if (tst.ElementKeyType is EnumType)
+      {
+        return string.Format("{{ [ {0} : number ] : {2}{1} }}",
+          tst.ElementKeyType.ClrType.Name, GetTypeName((dynamic)tst.ElementValueType), _moduleNameGenerator.GetModuleName((dynamic)tst.ElementValueType));
+      }
+
       return string.Format("{{ [ key : {2}{0} ] : {3}{1} }}",
         GetTypeName((dynamic)tst.ElementKeyType), GetTypeName((dynamic)tst.ElementValueType),
         _moduleNameGenerator.GetModuleName((dynamic)tst.ElementKeyType), _moduleNameGenerator.GetModuleName((dynamic)tst.ElementValueType));
