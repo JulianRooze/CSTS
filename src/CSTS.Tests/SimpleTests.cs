@@ -3,6 +3,7 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 using CSTS;
 using FluentAssertions;
 using System.Linq;
+using System.Collections.Generic;
 
 namespace TypeScriptDefinitionGeneratorTests
 {
@@ -45,6 +46,25 @@ namespace TypeScriptDefinitionGeneratorTests
       var type = ((CustomType)modules[0].ModuleMembers[0]).Properties.SingleOrDefault(p => p.Property.Name == "ID");
 
       type.Type.Should().BeOfType<NumberType>();
+    }
+
+    class DictionaryType
+    {
+      public IDictionary<string, string> Dictionary { get; set; }
+    }
+
+    [TestMethod]
+    public void Simple_dictionary_should_work()
+    {
+      var generator = new Generator(typeof(DictionaryType));
+
+      var modules = generator.GenerateMapping();
+
+      var classGenerator = new ClassDefinitionsGenerator(modules, new GeneratorOptions());
+
+      var code = classGenerator.Generate();
+
+      code.Should().Contain("Dictionary : { [ key : string ] : string }; ");
     }
   }
 }
