@@ -66,5 +66,41 @@ namespace TypeScriptDefinitionGeneratorTests
 
       code.Should().Contain("Dictionary : { [ key : string ] : string }; ");
     }
+
+    class NullableProperties
+    {
+      public int? NullableInt { get; set; }
+      public int NonNullableInt { get; set; }
+    }
+
+    [TestMethod]
+    public void Nullable_properties_should_be_optional_class()
+    {
+      var generator = new Generator(typeof(NullableProperties));
+
+      var modules = generator.GenerateMapping();
+
+      var classGenerator = new ClassDefinitionsGenerator(modules, new GeneratorOptions());
+
+      var code = classGenerator.Generate();
+
+      code.Should().Contain("NonNullableInt : number;");
+      code.Should().Contain("NullableInt? : number;");
+    }
+
+    [TestMethod]
+    public void Nullable_properties_should_be_optional_interface()
+    {
+      var generator = new Generator(typeof(NullableProperties));
+
+      var modules = generator.GenerateMapping();
+
+      var classGenerator = new InterfaceDefinitionsGenerator(modules, new GeneratorOptions());
+
+      var code = classGenerator.Generate();
+
+      code.Should().Contain("NonNullableInt : number;");
+      code.Should().Contain("NullableInt? : number;");
+    }
   }
 }

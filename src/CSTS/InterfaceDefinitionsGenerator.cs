@@ -99,9 +99,7 @@ namespace CSTS
 
     private string HandleOptional(TypeScriptType typeScriptType)
     {
-      var vt = typeScriptType as ValueType;
-
-      if (vt != null)
+      if (typeScriptType is ValueType vt)
       {
         return vt.IsNullable ? "?" : "";
       }
