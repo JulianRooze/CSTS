@@ -163,7 +163,17 @@ namespace CSTS
         sb.AppendLine(prefixComment);
       }
 
-      sb.AppendLine("{0} : {1}{2}; {3}", p.Property.Name, _moduleNameGenerator.GetModuleName((dynamic)p.Type), _typeNameGenerator.GetTypeName((dynamic)p.Type), _propertyCommenter.GetPropertyCommentPostfixed(p));
+      sb.AppendLine("{0}{3} : {1}{2}; {4}", p.Property.Name, _moduleNameGenerator.GetModuleName((dynamic)p.Type), _typeNameGenerator.GetTypeName((dynamic)p.Type), HandleOptional(p.Type), _propertyCommenter.GetPropertyCommentPostfixed(p));
+    }
+
+    private string HandleOptional(TypeScriptType typeScriptType)
+    {
+      if (typeScriptType is ValueType vt)
+      {
+        return vt.IsNullable ? "?" : "";
+      }
+
+      return "";
     }
 
     private string RenderInterfaces(CustomType type)
