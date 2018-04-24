@@ -59,6 +59,20 @@ namespace CSTS
     public CommentingOptions CommentingOptions { get; set; }
     public CodeGenerationOptions CodeGenerationOptions { get; set; }
 
+    public ModuleSortingOptions ModuleSortingOption { get; set; }
+    public TypeSortingOptions TypeSortingOption { get; set; }
+  }
+
+  public enum ModuleSortingOptions
+  {
+    Input,
+    Alphabetical
+  }
+
+  public enum TypeSortingOptions
+  {
+    Input,
+    Alphabetical
   }
 
   public class CodeGenerationOptions

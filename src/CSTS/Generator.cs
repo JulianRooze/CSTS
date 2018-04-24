@@ -403,15 +403,27 @@ namespace CSTS
         ProcessTypeScriptType(type, (dynamic)tst);
       }
 
-      var groupedByModule = _processedTypes.Values.OfType<IModuleMember>()
+      var types = _processedTypes.Values.OfType<IModuleMember>();
+
+      if (_options.TypeSortingOption == TypeSortingOptions.Alphabetical)
+      {
+        types = types.OrderBy(t => t.ClrType.Name);
+      }
+
+      var groupedByModule = types
         .GroupBy(m => m.Module)
         .Select(m => new TypeScriptModule
         {
           Module = m.Key ?? string.Empty,
           ModuleMembers = m.ToList()
-        }).ToList();
+        });
 
-      return groupedByModule;
+      if (_options.ModuleSortingOption == ModuleSortingOptions.Alphabetical)
+      {
+        groupedByModule = groupedByModule.OrderBy(m => m.Module);
+      }
+
+      return groupedByModule.ToList();
     }
   }
 }
